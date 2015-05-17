@@ -22,6 +22,8 @@ static void ubus_unref_object_type(struct ubus_object_type *type)
 {
 	struct ubus_method *m;
 
+	printf("%p ref--: %d\n", type, type->refcount-1); 
+
 	if (--type->refcount > 0)
 		return;
 
@@ -61,6 +63,8 @@ static struct ubus_object_type *ubus_create_obj_type(struct blob_attr *sig)
 	if (!type)
 		return NULL;
 
+	printf("Created obj type %p\n", type); 
+
 	type->refcount = 1;
 
 	if (!ubus_alloc_id(&obj_types, &type->id, 0))
@@ -98,6 +102,7 @@ static struct ubus_object_type *ubus_get_obj_type(uint32_t obj_id)
 
 	type = container_of(id, struct ubus_object_type, id);
 	type->refcount++;
+	printf("%p ref++: %d\n", type, type->refcount); 
 	return type;
 }
 
@@ -117,8 +122,9 @@ struct ubus_object *ubusd_create_object_internal(struct ubus_object_type *type, 
 	INIT_LIST_HEAD(&obj->events);
 	INIT_LIST_HEAD(&obj->subscribers);
 	INIT_LIST_HEAD(&obj->target_list);
-	if (type)
-		type->refcount++;
+	// this is already incremented in get/create obj type!
+	//if (type)
+	//	type->refcount++;
 
 	return obj;
 
@@ -138,11 +144,13 @@ struct ubus_object *ubusd_create_object(struct ubus_client *cl, struct blob_attr
 		type = ubus_create_obj_type(attr[UBUS_ATTR_SIGNATURE]);
 
 	obj = ubusd_create_object_internal(type, 0);
-	if (type)
-		ubus_unref_object_type(type);
+//	if (type)
+//		ubus_unref_object_type(type);
 
-	if (!obj)
+	if (!obj){
+		ubus_unref_object_type(type); 
 		return NULL;
+	}
 
 	if (attr[UBUS_ATTR_OBJPATH]) {
 		obj->path.key = strdup(blob_data(attr[UBUS_ATTR_OBJPATH]));
@@ -231,5 +239,10 @@ static void __constructor ubusd_obj_init(void)
 }
 
 static void __destructor ubusd_obj_shutdown(void){
+	struct ubus_object *obj, *nobj;
+	printf("clean: objects\n");  
+	avl_for_each_element_safe(&objects, obj, id.avl, nobj){
+		//ubusd_free_object(obj); 
+	}
 	ubusd_event_shutdown(); 
 }

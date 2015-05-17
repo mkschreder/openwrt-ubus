@@ -297,6 +297,7 @@ retry:
 		cl->pending_msg_offset = 0;
 		cl->pending_msg = NULL;
 		ubusd_proto_receive_message(cl, ub);
+		ubus_msg_free(ub); // free the temporary ub variable!
 		goto retry;
 	}
 

@@ -338,11 +338,12 @@ static int ubusd_handle_response(struct ubus_client *cl, struct ubus_msg_buf *ub
 		goto error;
 
 	ub->hdr.peer = blob_get_u32(attr[UBUS_ATTR_OBJID]);
-	ubus_msg_send(cl, ub, true);
+	ubus_msg_send(cl, ub, false);
 	return -1;
 
 error:
-	ubus_msg_free(ub);
+	// the caller must free this, not us!
+	//ubus_msg_free(ub);
 	return -1;
 }
 
@@ -528,11 +529,13 @@ static void __constructor ubusd_proto_init(void)
 }
 
 static void __destructor ubusd_proto_shutdown(void){
-	printf("Shutting down..\n"); 
 	struct ubus_client *cl, *ncl; 
+	printf("cleanup: clients\n"); 
 	avl_for_each_element_safe(&clients, cl, id.avl, ncl){
 		free(cl); 
 	}
+	printf("cleanup: buffer\n"); 
 	blob_buf_free(&b); 
+	printf("cleanup: retmsg\n"); 
 	ubus_msg_free(retmsg); 
 }
