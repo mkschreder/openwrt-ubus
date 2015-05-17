@@ -530,12 +530,9 @@ static void __constructor ubusd_proto_init(void)
 
 static void __destructor ubusd_proto_shutdown(void){
 	struct ubus_client *cl, *ncl; 
-	printf("cleanup: clients\n"); 
 	avl_for_each_element_safe(&clients, cl, id.avl, ncl){
 		free(cl); 
 	}
-	printf("cleanup: buffer\n"); 
 	blob_buf_free(&b); 
-	printf("cleanup: retmsg\n"); 
 	ubus_msg_free(retmsg); 
 }

@@ -22,8 +22,6 @@ static void ubus_unref_object_type(struct ubus_object_type *type)
 {
 	struct ubus_method *m;
 
-	printf("%p ref--: %d\n", type, type->refcount-1); 
-
 	if (--type->refcount > 0)
 		return;
 
@@ -63,8 +61,6 @@ static struct ubus_object_type *ubus_create_obj_type(struct blob_attr *sig)
 	if (!type)
 		return NULL;
 
-	printf("Created obj type %p\n", type); 
-
 	type->refcount = 1;
 
 	if (!ubus_alloc_id(&obj_types, &type->id, 0))
@@ -102,7 +98,6 @@ static struct ubus_object_type *ubus_get_obj_type(uint32_t obj_id)
 
 	type = container_of(id, struct ubus_object_type, id);
 	type->refcount++;
-	printf("%p ref++: %d\n", type, type->refcount); 
 	return type;
 }
 
@@ -240,7 +235,6 @@ static void __constructor ubusd_obj_init(void)
 
 static void __destructor ubusd_obj_shutdown(void){
 	struct ubus_object *obj, *nobj;
-	printf("clean: objects\n");  
 	avl_for_each_element_safe(&objects, obj, id.avl, nobj){
 		//ubusd_free_object(obj); 
 	}
