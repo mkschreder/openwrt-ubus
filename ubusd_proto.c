@@ -128,9 +128,9 @@ static int ubusd_handle_remove_object(struct ubus_client *cl, struct ubus_msg_bu
 	if (obj->type && obj->type->refcount == 1)
 		blob_put_int32(&b, UBUS_ATTR_OBJTYPE, obj->type->id.id);
 
-	ubusd_free_object(obj);
 	ubus_send_msg_from_blob(cl, ub, UBUS_MSG_DATA);
 
+	ubusd_free_object(obj);
 	return 0;
 }
 
@@ -148,7 +148,6 @@ static int ubusd_handle_add_object(struct ubus_client *cl, struct ubus_msg_buf *
 	if (attr[UBUS_ATTR_SIGNATURE])
 		blob_put_int32(&b, UBUS_ATTR_OBJTYPE, obj->type->id.id);
 
-	ubusd_free_object(obj); 
 	
 	ubus_send_msg_from_blob(cl, ub, UBUS_MSG_DATA);
 
@@ -254,7 +253,7 @@ static int ubusd_handle_invoke(struct ubus_client *cl, struct ubus_msg_buf *ub, 
 	ub->hdr.peer = cl->id.id;
 	blob_buf_init(&b, 0);
 	ubusd_forward_invoke(obj, method, ub, attr[UBUS_ATTR_DATA]);
-	ubus_msg_free(ub);
+	//ubus_msg_free(ub);
 
 	return -1;
 }
@@ -432,8 +431,6 @@ void ubusd_proto_receive_message(struct ubus_client *cl, struct ubus_msg_buf *ub
 	else
 		ret = UBUS_STATUS_INVALID_COMMAND;
 
-	ubus_msg_free(ub);
-	
 	if (ret == -1)
 		return;
 
@@ -532,6 +529,10 @@ static void __constructor ubusd_proto_init(void)
 
 static void __destructor ubusd_proto_shutdown(void){
 	printf("Shutting down..\n"); 
+	struct ubus_client *cl, *ncl; 
+	avl_for_each_element_safe(&clients, cl, id.avl, ncl){
+		free(cl); 
+	}
 	blob_buf_free(&b); 
 	ubus_msg_free(retmsg); 
 }
