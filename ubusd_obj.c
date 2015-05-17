@@ -229,3 +229,7 @@ static void __constructor ubusd_obj_init(void)
 	ubus_init_string_tree(&path, false);
 	ubusd_event_init();
 }
+
+static void __destructor ubusd_obj_shutdown(void){
+	ubusd_event_shutdown(); 
+}

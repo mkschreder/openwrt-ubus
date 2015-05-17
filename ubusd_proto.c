@@ -138,6 +138,7 @@ static int ubusd_handle_add_object(struct ubus_client *cl, struct ubus_msg_buf *
 {
 	struct ubus_object *obj;
 
+	
 	obj = ubusd_create_object(cl, attr);
 	if (!obj)
 		return UBUS_STATUS_INVALID_ARGUMENT;
@@ -147,7 +148,10 @@ static int ubusd_handle_add_object(struct ubus_client *cl, struct ubus_msg_buf *
 	if (attr[UBUS_ATTR_SIGNATURE])
 		blob_put_int32(&b, UBUS_ATTR_OBJTYPE, obj->type->id.id);
 
+	ubusd_free_object(obj); 
+	
 	ubus_send_msg_from_blob(cl, ub, UBUS_MSG_DATA);
+
 	return 0;
 }
 
@@ -428,10 +432,10 @@ void ubusd_proto_receive_message(struct ubus_client *cl, struct ubus_msg_buf *ub
 	else
 		ret = UBUS_STATUS_INVALID_COMMAND;
 
+	ubus_msg_free(ub);
+	
 	if (ret == -1)
 		return;
-
-	ubus_msg_free(ub);
 
 	*retmsg_data = htonl(ret);
 	ubus_msg_send(cl, retmsg, false);
@@ -524,4 +528,10 @@ static void __constructor ubusd_proto_init(void)
 
 	retmsg->hdr.type = UBUS_MSG_STATUS;
 	retmsg_data = blob_data(blob_data(retmsg->data));
+}
+
+static void __destructor ubusd_proto_shutdown(void){
+	printf("Shutting down..\n"); 
+	blob_buf_free(&b); 
+	ubus_msg_free(retmsg); 
 }

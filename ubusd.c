@@ -360,7 +360,7 @@ int main(int argc, char **argv)
 	const char *ubus_socket = UBUS_UNIX_SOCKET;
 	int ret = 0;
 	int ch;
-
+	
 	signal(SIGPIPE, SIG_IGN);
 
 	uloop_init();
@@ -386,6 +386,7 @@ int main(int argc, char **argv)
 	uloop_fd_add(&server_fd, ULOOP_READ | ULOOP_EDGE_TRIGGER);
 
 	uloop_run();
+	
 	unlink(ubus_socket);
 
 out:

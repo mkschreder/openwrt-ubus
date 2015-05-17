@@ -271,3 +271,6 @@ void ubusd_event_init(void)
 		event_obj->recv_msg = ubusd_event_recv;
 }
 
+void ubusd_event_shutdown(void){
+	ubusd_free_object(event_obj); 
+}
